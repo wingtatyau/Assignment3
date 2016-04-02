@@ -69,7 +69,7 @@ void automatic_ticketing_machine(int position[2]){
     cout << "locked seatAvailable\n";
     sleep(1);
 
-    if(seatAvailable.col > 3){
+    if(seatAvailable.col > 4){
 
         position[0] = ++seatAvailable.row;
 
@@ -77,7 +77,7 @@ void automatic_ticketing_machine(int position[2]){
 
         seatAvailable.col = 1;
 
-        position[1] = seatAvailable.col;
+        position[1] = seatAvailable.col++;
 
     } else {
 
@@ -108,6 +108,22 @@ void enqueue(queueItem tag){
     pthread_mutex_unlock(&mutexBox);
 
 }
+
+queueItem dequeue(){
+
+    if(!boxQueue.empty())
+    {
+        tag = boxQueue.front();
+        cout << "boxQueue pop\n";
+        boxQueue.pop();
+        cout << "  Seat num: " << tag.row << " " << tag.col << " luggage: " << tag.luggage << endl;
+    }
+
+    return tag;
+
+}
+
+
 
 void *setLuggage(void *seat_num){
 
@@ -159,9 +175,10 @@ int main(int argc, char* argv[]){
 
     // master thread waiting for each worker-thread
     // i.e. driver waiting each passenger to submit his/her luggage record sheet
+    int tempPassengerNum = num_of_passenger;
     for(i=0; i<NUM_ROW; i++){
         for (j=0; j<NUM_COL; j++) {
-            if(num_of_passenger){
+            if(tempPassengerNum){
                 rc = pthread_join(passenger[i][j], NULL);
 
                 if(rc){
@@ -169,9 +186,20 @@ int main(int argc, char* argv[]){
                     exit(-1);
                 }
 
-                num_of_passenger--;
+                tempPassengerNum--;
             }
         }
+    }
+
+    // master thread dequeue and store the data to luggage[][]
+    // i.e. driver marking the luggage record record sheet according to the tags in order
+    tempPassengerNum = num_of_passenger;
+    while(tempPassengerNum){
+        tag = dequeue();
+        luggage[tag.row-1][tag.col-1] = tag.luggage;
+        cout << "  [" << tag.row-1 << "]" << "[" << tag.col-1 << "] =" << tag.luggage << endl;
+        cout << "  tempPassengerNum = " << tempPassengerNum << endl;
+	tempPassengerNum--;
     }
 
     int num_of_luggage = 0;
