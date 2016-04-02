@@ -12,14 +12,14 @@ using namespace std;
 
 // Data types
 struct seat{
-	int row;
-	int col;
+    int row;
+    int col;
 };
 
 struct queueItem{
-	int row;
-	int col;
-	char luggage;
+    int row;
+    int col;
+    char luggage;
 };
 
 // Global variables
@@ -35,6 +35,15 @@ int *automatic_ticketing_machine();
 void enqueue(queueItem);
 queueItem dequeue();
 
+
+void *passengers(void *passengerId){
+
+    cout << "Passenger " << *(int *)passengerId << " created\n";
+    sleep(rand() % 120 + 1);        // wait 0 to 2 minutes
+    cout << "Passenger " << *(int *)passengerId << " arrived\n";
+
+    pthread_exit(NULL);
+}
 
 void *setLuggage(void *seat_num){
 
@@ -55,6 +64,7 @@ int main(int argc, char* argv[]){
     int num_of_passenger = atoi(argv[1]);
     //cout << num_of_passenger << endl;
     char luggage[NUM_ROW][NUM_COL];     // luggage record sheet
+    int passengerThreadId[num_of_passenger];
 
     srand(time(NULL));                  // seed for a new psedorandom integer
 
@@ -66,7 +76,9 @@ int main(int argc, char* argv[]){
                 luggage[i][j] = 'E';
             } else{
                 //cout << "Passenger [" << i << "] [" << j << "]\n" ;
-                rc = pthread_create(&passenger[i][j], NULL, setLuggage, (void *)&luggage[i][j]);
+		passengerThreadId[4*i + j] = 4*i + j;
+		cout << "Passenger thread ID: " << passengerThreadId[4*i + j] << endl;
+                rc = pthread_create(&passenger[i][j], NULL, passengers, (void *)&passengerThreadId[4*i+j]);
 
                 if(rc){
                     cout << "Error: unable to create thread\n";
