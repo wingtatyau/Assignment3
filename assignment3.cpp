@@ -27,7 +27,8 @@ seat seatAvailable;
 queueItem tag;
 queue<queueItem> boxQueue;
 
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutexSeatAvailable = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutexBox = PTHREAD_MUTEX_INITIALIZER;
 
 // Function prototypes
 void *passengers();
@@ -55,7 +56,7 @@ void *passengers(void *passengerId){
 
 void automatic_ticketing_machine(int position[2]){
 
-    pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(&mutexSeatAvailable);
     cout << "locked\n";
     sleep(1);
 
@@ -80,7 +81,7 @@ void automatic_ticketing_machine(int position[2]){
     }
 
     cout << "unlock\n";
-    pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&mutexSeatAvailable);
 
 }
 
