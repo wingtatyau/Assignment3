@@ -69,25 +69,19 @@ void automatic_ticketing_machine(int position[2]){
     cout << "locked seatAvailable\n";
     sleep(1);
 
+    position[0] = seatAvailable.row;
+
+    sleep(1);
+
+    position[1] = seatAvailable.col++;
+
     if(seatAvailable.col > 4){
 
-        position[0] = ++seatAvailable.row;
-
-        sleep(1);
-
+        seatAvailable.row++;
         seatAvailable.col = 1;
 
-        position[1] = seatAvailable.col++;
-
-    } else {
-
-        position[0] = seatAvailable.row;
-
-        sleep(1);
-
-        position[1] = seatAvailable.col++;
-
     }
+
 
     cout << "unlock seatAvailable\n";
     pthread_mutex_unlock(&mutexSeatAvailable);
@@ -127,7 +121,6 @@ queueItem dequeue(){
 int main(int argc, char* argv[]){
 
     int rc, i, j;
-    int passenger_on_coach = 0;
     const int num_of_passenger = atoi(argv[1]);
     //cout << num_of_passenger << endl;
 
@@ -170,21 +163,20 @@ int main(int argc, char* argv[]){
     for(int i=0; i<num_of_passenger; i++){
         tag = dequeue();
         luggage[tag.row-1][tag.col-1] = tag.luggage;
-        cout << "  [" << tag.row-1 << "]" << "[" << tag.col-1 << "] =" << tag.luggage << endl;
+        cout << "  [" << tag.row-1 << "]" << "[" << tag.col-1 << "] = " << tag.luggage << endl;
         cout << "  i = " << i << endl;;
     }
 
 
-    for(i=0; i<NUM_ROW; i++){
-        for (j=0; j<NUM_COL; j++) {
+    for(i=seatAvailable.row-1; i<NUM_ROW; i++){
+        for (j=seatAvailable.col-1; j<NUM_COL; j++) {
             //cout << "Number of passengers: " << num_of_passenger << endl;
             //cout << "Passenger on coach: " << passenger_on_coach << endl;
-            if(num_of_passenger <= passenger_on_coach){
-                luggage[i][j] = 'E';
-            }
-            passenger_on_coach++;
+            cout << "i = " << i << " j = " << j << endl;
+            luggage[i][j] = 'E';
 
         }
+        seatAvailable.col = 1;
     }
 
     int num_of_luggage = 0;
