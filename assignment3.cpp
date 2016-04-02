@@ -3,11 +3,38 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <cstdlib>
+#include <queue>
 
 using namespace std;
 
 #define NUM_ROW     9
 #define NUM_COL     4
+
+// Data types
+struct seat{
+	int row;
+	int col;
+};
+
+struct queueItem{
+	int row;
+	int col;
+	char luggage;
+};
+
+// Global variables
+seat seatOccipoed;
+queueItem tag;
+queue<queueItem> boxQueue;
+
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+// Function prototypes
+void *passengers();
+int *automatic_ticketing_machine();
+void enqueue(queueItem);
+queueItem dequeue();
+
 
 void *setLuggage(void *seat_num){
 
