@@ -23,7 +23,7 @@ struct queueItem{
 };
 
 // Global variables
-seat seatOccipoed;
+seat seatAvailable;
 queueItem tag;
 queue<queueItem> boxQueue;
 
@@ -35,14 +35,58 @@ int *automatic_ticketing_machine();
 void enqueue(queueItem);
 queueItem dequeue();
 
-
 void *passengers(void *passengerId){
 
     cout << "Passenger " << *(int *)passengerId << " created\n";
     sleep(rand() % 120 + 1);        // wait 0 to 2 minutes
     cout << "Passenger " << *(int *)passengerId << " arrived\n";
 
+    int *position;
+    position  = automatic_ticketing_machine();
+
+    cout << "Passenger " <<*(int *)passengerId  << " Seat No.:(" << position[0] << ", " << position[1] << ")\n";
+
+    sleep(rand() % 60 + 1);         // wait 0 to 1 minute
+
+    cout << "Passenger " <<*(int *)passengerId  << " got on the coach\n";
+
     pthread_exit(NULL);
+}
+
+int *automatic_ticketing_machine(){
+
+    int temp[2];
+
+    pthread_mutex_lock(&mutex);
+    cout << "locked\n";
+    sleep(1);
+
+    if(seatAvailable.col > 3){
+
+        temp[0] = ++seatAvailable.row;
+
+        sleep(1);
+
+        seatAvailable.col = 1;
+
+        temp[1] = seatAvailable.col;
+
+    } else {
+
+        temp[0] = seatAvailable.row;
+
+        sleep(1);
+
+        temp[1] = seatAvailable.col++;
+
+    }
+
+
+    cout << "unlock\n";
+    pthread_mutex_unlock(&mutex);
+
+    return temp;
+
 }
 
 void *setLuggage(void *seat_num){
@@ -65,6 +109,9 @@ int main(int argc, char* argv[]){
     //cout << num_of_passenger << endl;
     char luggage[NUM_ROW][NUM_COL];     // luggage record sheet
     int passengerThreadId[num_of_passenger];
+
+    seatAvailable.row = 1;
+    seatAvailable.col = 1;
 
     srand(time(NULL));                  // seed for a new psedorandom integer
 
