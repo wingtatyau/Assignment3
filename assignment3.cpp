@@ -102,7 +102,7 @@ void enqueue(queueItem tag){
     boxQueue.push(tag);
 
     tag = boxQueue.back();
-    cout << "ENQUEUE: Seat number: " << tag.row << " " << tag.col << " lugguage: " << tag.luggage << endl;
+    cout << "ENQUEUE: Seat number: " << tag.row << " " << tag.col << " luggage: " << tag.luggage << endl;
 
     cout << "unlock boxQueue\n";
     pthread_mutex_unlock(&mutexBox);
@@ -123,17 +123,6 @@ queueItem dequeue(){
 
 }
 
-
-
-void *setLuggage(void *seat_num){
-
-    sleep(rand()%120+1);            // wait 0 to 2 minutes
-
-    // 20% of the passengers carry a luggage (marking the sheet)
-    *(char *)seat_num = (rand()%101 <= 20)?'Y':'N';
-
-    pthread_exit(NULL);
-}
 
 int main(int argc, char* argv[]){
 
@@ -208,7 +197,7 @@ int main(int argc, char* argv[]){
     for(i=0; i<NUM_ROW; i++){
         for(j=0; j<NUM_COL; j++){
             cout << luggage[i][j];
-            // count how many passengers carry lugguage
+            // count how many passengers carry luggage
             if (luggage[i][j] == 'Y'){
                 num_of_luggage++;
             }
