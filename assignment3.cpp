@@ -31,7 +31,7 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // Function prototypes
 void *passengers();
-int *automatic_ticketing_machine();
+void automatic_ticketing_machine(int[]);
 void enqueue(queueItem);
 queueItem dequeue();
 
@@ -41,8 +41,8 @@ void *passengers(void *passengerId){
     sleep(rand() % 120 + 1);        // wait 0 to 2 minutes
     cout << "Passenger " << *(int *)passengerId << " arrived\n";
 
-    int *position;
-    position  = automatic_ticketing_machine();
+    int position[2] = {0};
+    automatic_ticketing_machine(position);
 
     cout << "Passenger " <<*(int *)passengerId  << " Seat No.:(" << position[0] << ", " << position[1] << ")\n";
 
@@ -53,9 +53,7 @@ void *passengers(void *passengerId){
     pthread_exit(NULL);
 }
 
-int *automatic_ticketing_machine(){
-
-    int temp[2];
+void automatic_ticketing_machine(int position[2]){
 
     pthread_mutex_lock(&mutex);
     cout << "locked\n";
@@ -63,29 +61,26 @@ int *automatic_ticketing_machine(){
 
     if(seatAvailable.col > 3){
 
-        temp[0] = ++seatAvailable.row;
+        position[0] = ++seatAvailable.row;
 
         sleep(1);
 
         seatAvailable.col = 1;
 
-        temp[1] = seatAvailable.col;
+        position[1] = seatAvailable.col;
 
     } else {
 
-        temp[0] = seatAvailable.row;
+        position[0] = seatAvailable.row;
 
         sleep(1);
 
-        temp[1] = seatAvailable.col++;
+        position[1] = seatAvailable.col++;
 
     }
 
-
     cout << "unlock\n";
     pthread_mutex_unlock(&mutex);
-
-    return temp;
 
 }
 
