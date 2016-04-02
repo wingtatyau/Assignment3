@@ -51,13 +51,22 @@ void *passengers(void *passengerId){
 
     cout << "Passenger " <<*(int *)passengerId  << " got on the coach\n";
 
+    queueItem tag;
+
+    tag.row = position[0];
+    tag.col = position[1];
+    tag.luggage = (rand() % 101 <= 20) ? 'Y' : 'N';;
+    // 20% of the passengers carry a luggage (marking the sheet)
+
+    enqueue(tag);
+
     pthread_exit(NULL);
 }
 
 void automatic_ticketing_machine(int position[2]){
 
     pthread_mutex_lock(&mutexSeatAvailable);
-    cout << "locked\n";
+    cout << "locked seatAvailable\n";
     sleep(1);
 
     if(seatAvailable.col > 3){
@@ -80,8 +89,23 @@ void automatic_ticketing_machine(int position[2]){
 
     }
 
-    cout << "unlock\n";
+    cout << "unlock seatAvailable\n";
     pthread_mutex_unlock(&mutexSeatAvailable);
+
+}
+
+void enqueue(queueItem tag){
+
+    pthread_mutex_lock(&mutexBox);
+    cout << "lock boxQueue\n";
+
+    boxQueue.push(tag);
+
+    tag = boxQueue.back();
+    cout << "ENQUEUE: Seat number: " << tag.row << " " << tag.col << " lugguage: " << tag.luggage << endl;
+
+    cout << "unlock boxQueue\n";
+    pthread_mutex_unlock(&mutexBox);
 
 }
 
