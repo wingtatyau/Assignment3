@@ -126,12 +126,12 @@ queueItem dequeue(){
 
 int main(int argc, char* argv[]){
 
-    pthread_t passenger[NUM_ROW][NUM_COL];
-
     int rc, i, j;
     int passenger_on_coach = 0;
-    int num_of_passenger = atoi(argv[1]);
+    const int num_of_passenger = atoi(argv[1]);
     //cout << num_of_passenger << endl;
+
+    pthread_t passenger[num_of_passenger];
     char luggage[NUM_ROW][NUM_COL];     // luggage record sheet
     int passengerThreadId[num_of_passenger];
 
@@ -140,55 +140,51 @@ int main(int argc, char* argv[]){
 
     srand(time(NULL));                  // seed for a new psedorandom integer
 
+    for(i=0; i<num_of_passenger; i++){
+
+        passengerThreadId[i] = i;
+        cout << "Passenger thread ID: " << passengerThreadId[i] << endl;
+        rc = pthread_create(&passenger[i], NULL, passengers, (void *)&passengerThreadId[i]);
+
+        if(rc){
+            cout << "Error: unable to create thread\n";
+            exit(-1);
+        }
+
+    }
+
+    // master thread waiting for each worker-thread
+    // i.e. driver waiting each passenger to submit his/her luggage record sheet
+    for(int i=0; i<num_of_passenger; i++){
+
+        rc = pthread_join(passenger[i], NULL);
+
+        if(rc){
+            cout << "Error: unable to join, " << rc << endl;
+            exit(-1);
+        }
+    }
+
+    // master thread dequeue and store the data to luggage[][]
+    // i.e. driver marking the luggage record record sheet according to the tags in order
+    for(int i=0; i<num_of_passenger; i++){
+        tag = dequeue();
+        luggage[tag.row-1][tag.col-1] = tag.luggage;
+        cout << "  [" << tag.row-1 << "]" << "[" << tag.col-1 << "] =" << tag.luggage << endl;
+        cout << "  i = " << i << endl;;
+    }
+
+
     for(i=0; i<NUM_ROW; i++){
         for (j=0; j<NUM_COL; j++) {
             //cout << "Number of passengers: " << num_of_passenger << endl;
             //cout << "Passenger on coach: " << passenger_on_coach << endl;
             if(num_of_passenger <= passenger_on_coach){
                 luggage[i][j] = 'E';
-            } else{
-                //cout << "Passenger [" << i << "] [" << j << "]\n" ;
-		passengerThreadId[4*i + j] = 4*i + j;
-		cout << "Passenger thread ID: " << passengerThreadId[4*i + j] << endl;
-                rc = pthread_create(&passenger[i][j], NULL, passengers, (void *)&passengerThreadId[4*i+j]);
-
-                if(rc){
-                    cout << "Error: unable to create thread\n";
-                    exit(-1);
-                }
             }
             passenger_on_coach++;
 
         }
-    }
-
-    // master thread waiting for each worker-thread
-    // i.e. driver waiting each passenger to submit his/her luggage record sheet
-    int tempPassengerNum = num_of_passenger;
-    for(i=0; i<NUM_ROW; i++){
-        for (j=0; j<NUM_COL; j++) {
-            if(tempPassengerNum){
-                rc = pthread_join(passenger[i][j], NULL);
-
-                if(rc){
-                    cout << "Error: unable to join, " << rc << endl;
-                    exit(-1);
-                }
-
-                tempPassengerNum--;
-            }
-        }
-    }
-
-    // master thread dequeue and store the data to luggage[][]
-    // i.e. driver marking the luggage record record sheet according to the tags in order
-    tempPassengerNum = num_of_passenger;
-    while(tempPassengerNum){
-        tag = dequeue();
-        luggage[tag.row-1][tag.col-1] = tag.luggage;
-        cout << "  [" << tag.row-1 << "]" << "[" << tag.col-1 << "] =" << tag.luggage << endl;
-        cout << "  tempPassengerNum = " << tempPassengerNum << endl;
-	tempPassengerNum--;
     }
 
     int num_of_luggage = 0;
