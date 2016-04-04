@@ -25,11 +25,11 @@ struct queueItem{
 };
 
 // Global variables
-seat seatAvailable;
+seat nextSeat;
 queueItem tag;
 queue<queueItem> boxQueue;
 
-pthread_mutex_t mutexSeatAvailable = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutexNextSeat = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutexBox = PTHREAD_MUTEX_INITIALIZER;
 
 // Function prototypes
@@ -68,26 +68,26 @@ void *passengers(void *passengerId){
 
 void automatic_ticketing_machine(int position[2]){
 
-    pthread_mutex_lock(&mutexSeatAvailable);
-    //cout << "locked seatAvailable\n";
+    pthread_mutex_lock(&mutexNextSeat);
+    //cout << "locked nextSeat\n";
     sleep(1);
 
-    position[0] = seatAvailable.row;
+    position[0] = nextSeat.row;
 
     sleep(1);
 
-    position[1] = seatAvailable.col++;
+    position[1] = nextSeat.col++;
 
-    if(seatAvailable.col > 4){
+    if(nextSeat.col > 4){
 
-        seatAvailable.row++;
-        seatAvailable.col = 1;
+        nextSeat.row++;
+        nextSeat.col = 1;
 
     }
 
 
-    //cout << "unlock seatAvailable\n";
-    pthread_mutex_unlock(&mutexSeatAvailable);
+    //cout << "unlock nextSeat\n";
+    pthread_mutex_unlock(&mutexNextSeat);
 
 }
 
@@ -131,8 +131,8 @@ int main(int argc, char* argv[]){
     char luggage[NUM_ROW][NUM_COL];     // luggage record sheet
     int passengerThreadId[num_of_passenger];
 
-    seatAvailable.row = 1;
-    seatAvailable.col = 1;
+    nextSeat.row = 1;
+    nextSeat.col = 1;
 
     srand(time(NULL));                  // seed for a new psedorandom integer
 
@@ -171,13 +171,13 @@ int main(int argc, char* argv[]){
     }
 
     // marking empty seats
-    for(i=seatAvailable.row-1; i<NUM_ROW; i++){
-        for (j=seatAvailable.col-1; j<NUM_COL; j++) {
+    for(i=nextSeat.row-1; i<NUM_ROW; i++){
+        for (j=nextSeat.col-1; j<NUM_COL; j++) {
             //cout << "i = " << i << " j = " << j << endl;
             luggage[i][j] = 'E';
 
         }
-        seatAvailable.col = 1;
+        nextSeat.col = 1;
     }
 
     int num_of_luggage = 0;
